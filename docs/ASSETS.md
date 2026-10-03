@@ -42,4 +42,4 @@ Preserve the logo's original 1157:130 aspect ratio. Conversion to PNG or recolor
 
 ## Runtime and data boundary
 
-DragonRuby 7.21 Pro is an externally installed, licensed runtime and is not an asset in this repository. No runtime redistribution or public repository push is included in this project. No private guest records, database exports, browser state or authentication data belong in the display or asset bundle.
+DragonRuby 7.21 Pro is an externally installed, licensed runtime and is not an asset in this repository. Runtime redistribution is excluded. The source/media repository is published only to the user-authorized destination; its content retains the distinct rights stated above. No private guest records, database exports, browser state or authentication data belong in the display or asset bundle.

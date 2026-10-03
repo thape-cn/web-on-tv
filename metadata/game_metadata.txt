@@ -1,3 +1,4 @@
+devid=tianhua
 devtitle=Tianhua
 gameid=tianhua-lobby-display
 gametitle=TIANHUA Reception Display
