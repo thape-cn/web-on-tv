@@ -25,12 +25,26 @@ The display opens fullscreen and hides the pointer. There are no on-screen butto
 
 - Layout uses a **1280 × 720 logical canvas**. DragonRuby HD mode and linear scaling are enabled in `metadata/game_metadata.txt` for 1080p and 4K displays; photographic source resolution still limits image detail.
 - Use a **16:9 TV/output mode** for edge-to-edge presentation. A 4:3 output preserves the composition with letterboxing rather than stretching it.
-- The loop is **106 seconds**: welcome 10s; three hero projects at 14s each; collection 12s; three more heroes at 14s each. It repeats automatically.
+- The loop is **130 seconds**: opening 34s; three hero projects at 14s each; collection 12s; three more heroes at 14s each. It repeats automatically.
 - Smooth 2-second dissolves occur inside each scene's allotted duration, including the last-to-first transition. Gentle source-image pan/zoom fills each photo viewport without distorting the image.
+
+## Opening choreography
+
+The 34-second opening begins on an entirely white canvas. The waterfront and architectural structure are drawn with real DragonRuby line primitives, followed by roof, façade and quiet landscape detail. Individual segments lengthen continuously; this is not a still sketch uncovered by a mask.
+
+- 0–1.6s: blank white sheet
+- 1.6–19s: staged architectural drawing; logo fades in from 5s, introduction from 9s
+- 19–20s: completed drawing holds
+- 20–27s: a slow photographic development; pencil contours recede naturally
+- 27–34s: finished photograph, caption and a subtle camera push; outgoing dissolve occupies the last 2s
+
+The photograph and vector paths use the same source coordinate transform. The camera remains fixed through the entire drawing/photo overlap, avoiding a sliding or mismatched reveal. A dedicated 2× render target clips the drawing to the right panel and smooths native line rendering. The remaining seven scenes retain their original timing and design.
 
 ## Editing
 
 - `app/config.rb`: six bilingual hero titles, local image paths, reference work URLs, scene order/durations, fullscreen flag and dissolve duration. URLs are provenance metadata, not runtime links or network requests.
+- `app/nanhu_strokes.rb`: hand-authored architectural contours in source-photo coordinates (1920 × 968, top-left origin). Edit meaningful roofs, eaves and façade paths here; no raster sketch is used.
+- `app/nanhu_sketch.rb`: distance-based stroke drawing, supersampled native line primitives, shared crop transform, and the drawing-to-photo choreography.
 - `app/timeline.rb`: pure-Ruby scene selection, wraparound and smooth dissolve calculation. Keep scene durations positive and the fade positive and no longer than the shortest scene.
 - `app/main.rb`: composition, palette, typography, welcome/service wording, three collection cards, crop handling and the optional QA capture hook. If replacing photos, maintain the expected dimensions or update the crop dimensions as well.
 - `metadata/game_metadata.txt`: application identity and display/scaling settings. The layout is intentionally fixed at 16:9; changing only the width/height constants will not redesign the hardcoded compositions.
@@ -42,10 +56,10 @@ To rebuild after editing text: `python3 scripts/build_font.py` (requires fonttoo
 
 ## QA and collaboration
 
-Native QA completed a full unattended 106-second loop and clean restart on the cloud Linux desktop. All eight scenes, Chinese/English glyphs, longest title, photo crops, crossfades and wraparound were checked; no missing non-ASCII glyphs were found. The pure Ruby suite passed 5 tests / 25,508 assertions. Before deployment, still review scaling, color and overscan on the intended physical TV; that hardware was not available for this check.
+Native QA completed a full unattended 130-second loop and clean restart on the cloud Linux desktop. All eight scenes, Chinese/English glyphs, longest title, photo crops, crossfades and wraparound were checked; no missing non-ASCII glyphs were found. The pure Ruby suite passed 10 tests / 34,596 assertions. Before deployment, still review scaling, color and overscan on the intended physical TV; that hardware was not available for this check.
 
-For a development capture run, create `qa/enabled.txt` before launch. The current QA hook writes one screenshot per scene and `qa/result.txt` after a full loop plus three seconds. This records scene capture count and a maximum wall-clock frame gap after warm-up; it is not a substitute for visual review or a frame-rate benchmark. Remove the marker and restart for normal operation. The `qa/` directory is ignored by Git.
+For a development capture run, create `qa/enabled.txt` before launch. The current QA hook writes eight opening-stage screenshots, one screenshot per scene, and `qa/result.txt` after a full loop plus three seconds. This records scene capture count and a maximum wall-clock frame gap after warm-up, excluding the one-second windows following screenshot I/O; it is not a substitute for visual review or a frame-rate benchmark. Remove the marker and restart for normal operation. The `qa/` directory is ignored by Git.
 
 Collaborate in Git using small topic branches and reviewable commits. Review code and source/license changes together; use the same separately licensed runtime version for reproducible native checks. Keep generated logs, QA captures, runtime binaries, credentials and local machine settings out of commits. The user-authorized repository is `https://github.com/thape-cn/web-on-tv`. Do not redistribute its media/runtime beyond the applicable permissions. The MIT code license does not make the photographs and Tianhua branding freely redistributable.
 
-Run the offline timeline tests with `ruby test/timeline_test.rb`. No DragonRuby runtime is needed for this test.
+Run the offline timeline tests with `ruby -Itest -e 'Dir["test/*_test.rb"].each { |file| require_relative file }'`. No DragonRuby runtime is needed for this test.
