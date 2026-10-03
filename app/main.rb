@@ -14,6 +14,10 @@ class TianhuaLobby
       args.gtk.set_window_fullscreen LobbyConfig::FULLSCREEN
       args.gtk.hide_cursor
       @started_at = Time.now.to_f
+      @qa = args.gtk.read_file('qa/enabled.txt')
+      @captured = {}
+      @last_frame = @started_at
+      @max_frame_gap = 0.0
       @ready = true
     end
     seconds = [Time.now.to_f - @started_at, 0.0].max
@@ -27,15 +31,29 @@ class TianhuaLobby
       draw_scene(args, :next_scene, upcoming, 0.0)
       args.outputs.sprites << { x: 0, y: 0, w: 1280, h: 720, path: :next_scene, a: (255 * timeline[:mix]).round }
     end
+    if @qa
+      now = Time.now.to_f
+      @max_frame_gap = [@max_frame_gap, now - @last_frame].max if seconds > 3
+      @last_frame = now
+      key = timeline[:index]
+      if timeline[:elapsed] > 3 && !@captured[key]
+        @captured[key] = true
+        args.outputs.screenshots << { x: 0, y: 0, w: 1280, h: 720, path: "qa/scene-#{key}.png" }
+      end
+      if seconds > LobbyTimeline.duration(LobbyConfig::SCENES) + 3 && !@qa_complete
+        args.gtk.write_file('qa/result.txt', "Full loop complete. Captured #{@captured.length} scenes. Max frame gap after warm-up: #{@max_frame_gap.round(4)} seconds.\n")
+        @qa_complete = true
+      end
+    end
     # No visitor controls; OS window close/Alt+F4 is the operator exit.
   end
 
   def solid(out, x, y, w, h, color, alpha = 255)
-    out.primitives << { x: x, y: y, w: w, h: h, r: color[0], g: color[1], b: color[2], a: alpha }.solid!
+    out.primitives << { x: x, y: y, w: w, h: h, r: color[0], g: color[1], b: color[2], a: alpha, path: 'assets/brand/pixel.png' }.sprite!
   end
 
   def label(out, text, x, y, size, color = WHITE, alpha = 255)
-    out.primitives << { x: x, y: y, text: text, size_px: size,
+    out.primitives << { x: x, y: y, text: text, size_px: (size * 1.45).round,
       font: LobbyConfig::FONT, r: color[0], g: color[1], b: color[2], a: alpha, anchor_y: 0 }.label!
   end
 
