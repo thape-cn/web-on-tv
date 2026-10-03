@@ -1,0 +1,15 @@
+logs/
+tmp/
+qa/
+*.log
+*.bak
+.DS_Store
+console_history.txt
+exceptions/
+replays/
+metadata/last_boot.txt
+.env*
+*credentials*
+*secret*
+dragonruby
+runtime/
