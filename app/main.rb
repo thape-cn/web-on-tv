@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'app/config.rb'
 require 'app/timeline.rb'
+require 'app/nanhu_sketch.rb'
 
 class TianhuaLobby
   INK = [24, 37, 39]
@@ -17,6 +18,7 @@ class TianhuaLobby
       @qa = args.gtk.read_file('qa/enabled.txt')
       @captured = {}
       @last_frame = @started_at
+      @last_capture = -10.0
       @max_frame_gap = 0.0
       @ready = true
     end
@@ -33,15 +35,26 @@ class TianhuaLobby
     end
     if @qa
       now = Time.now.to_f
-      @max_frame_gap = [@max_frame_gap, now - @last_frame].max if seconds > 3
+      @max_frame_gap = [@max_frame_gap, now - @last_frame].max if seconds > 3 && seconds - @last_capture > 1.0
       @last_frame = now
+      if timeline[:index] == 0
+        [0.5, 4.0, 8.0, 14.0, 19.0, 23.5, 27.5, 31.0].each do |stage|
+          key = "opening-#{stage}"
+          if timeline[:elapsed] >= stage && !@captured[key]
+            @captured[key] = true
+            @last_capture = seconds
+            args.outputs.screenshots << { x: 0, y: 0, w: 1280, h: 720, path: "qa/#{key}.png" }
+          end
+        end
+      end
       key = timeline[:index]
       if timeline[:elapsed] > 3 && !@captured[key]
         @captured[key] = true
+        @last_capture = seconds
         args.outputs.screenshots << { x: 0, y: 0, w: 1280, h: 720, path: "qa/scene-#{key}.png" }
       end
       if seconds > LobbyTimeline.duration(LobbyConfig::SCENES) + 3 && !@qa_complete
-        args.gtk.write_file('qa/result.txt', "Full loop complete. Captured #{@captured.length} scenes. Max frame gap after warm-up: #{@max_frame_gap.round(4)} seconds.\n")
+        args.gtk.write_file('qa/result.txt', "Full loop complete. Captured #{@captured.keys.count { |key| key.is_a?(Integer) }} scenes and opening stages. Max frame gap after warm-up, excluding capture I/O: #{@max_frame_gap.round(4)} seconds.\n")
         @qa_complete = true
       end
     end
@@ -58,9 +71,9 @@ class TianhuaLobby
       font: LobbyConfig::FONT, r: color[0], g: color[1], b: color[2], a: alpha, anchor_y: 0 }.label!
   end
 
-  def logo(out, x, y, width, light = false)
+  def logo(out, x, y, width, light = false, alpha = 255)
     out.primitives << { x: x, y: y, w: width, h: width * 130.0 / 1157,
-      path: light ? 'assets/brand/logo-white.png' : 'assets/brand/logo.png' }.sprite!
+      path: light ? 'assets/brand/logo-white.png' : 'assets/brand/logo.png', a: alpha }.sprite!
   end
 
   def photo(out, path, x, y, w, h, progress, iw = 1920.0, ih = 968.0)
@@ -81,25 +94,32 @@ class TianhuaLobby
     out.h = 720
     out.background_color = PAPER
     case scene[:kind]
-    when :welcome then welcome(out, progress)
+    when :welcome then welcome(args, out, progress)
     when :hero then hero(out, scene[:project], progress)
     when :collection then collection(out, progress)
     end
   end
 
-  def welcome(out, progress)
-    photo(out, LobbyConfig::PROJECTS[0][:image], 476, 0, 804, 720, progress)
-    solid(out, 0, 0, 476, 720, PAPER)
-    logo(out, 64, 612, 310)
-    solid(out, 64, 545, 42, 2, INK)
-    label(out, '欢迎来到天华', 60, 375, 48, INK)
-    label(out, 'WELCOME TO', 64, 329, 20, INK)
-    label(out, 'TIANHUA', 60, 263, 58, INK)
-    label(out, '建筑  ·  室内  ·  规划  ·  景观', 64, 137, 19, INK)
-    label(out, '上海天华建筑设计有限公司', 64, 99, 15, INK)
-    label(out, '嘉兴南湖天地', 522, 62, 22)
-    label(out, 'JIAXING NANHU PLACE', 522, 38, 12)
-    solid(out, 64, 61, 42 + progress * 290, 2, ACCENT)
+  def welcome(args, out, progress)
+    time = progress * LobbyConfig::SCENES[0][:duration]
+    # A real blank sheet at t=0; the photo is absent for the first 20 seconds.
+    solid(out, 0, 0, 1280, 720, WHITE)
+    sketch = NanhuSketch.render(args, time)
+    out.primitives << { x: 476, y: 0, w: 804, h: 720, path: sketch }.sprite!
+    brand = (255 * NanhuSketch.ramp(time, 5.0, 8.0)).round
+    introduction = (255 * NanhuSketch.ramp(time, 9.0, 12.5)).round
+    detail = (255 * NanhuSketch.ramp(time, 13.0, 16.0)).round
+    caption = (255 * NanhuSketch.ramp(time, 27.0, 29.0)).round
+    logo(out, 64, 612, 310, false, brand)
+    solid(out, 64, 545, 42, 2, INK, introduction)
+    label(out, '欢迎来到天华', 60, 375, 48, INK, introduction)
+    label(out, 'WELCOME TO', 64, 329, 20, INK, introduction)
+    label(out, 'TIANHUA', 60, 263, 58, INK, introduction)
+    label(out, '建筑  ·  室内  ·  规划  ·  景观', 64, 137, 19, INK, detail)
+    label(out, '上海天华建筑设计有限公司', 64, 99, 15, INK, detail)
+    label(out, '嘉兴南湖天地', 522, 62, 22, WHITE, caption)
+    label(out, 'JIAXING NANHU PLACE', 522, 38, 12, WHITE, caption)
+    solid(out, 64, 61, 42 + progress * 290, 2, ACCENT, detail)
   end
 
   def hero(out, index, progress)
