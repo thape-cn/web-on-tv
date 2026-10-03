@@ -34,6 +34,8 @@ class TianhuaLobby
       args.outputs.sprites << { x: 0, y: 0, w: 1280, h: 720, path: :next_scene, a: (255 * timeline[:mix]).round }
     end
     if @qa
+      # Keep the optional QA hook safe when code is hot-reloaded mid-loop.
+      @last_capture ||= -10.0
       now = Time.now.to_f
       @max_frame_gap = [@max_frame_gap, now - @last_frame].max if seconds > 3 && seconds - @last_capture > 1.0
       @last_frame = now
