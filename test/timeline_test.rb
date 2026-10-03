@@ -5,7 +5,7 @@ require_relative '../app/timeline'
 
 class TimelineTest < Minitest::Test
   def test_total_duration
-    assert_equal 130.0, LobbyTimeline.duration(LobbyConfig::SCENES)
+    assert_equal 117.0, LobbyTimeline.duration(LobbyConfig::SCENES)
   end
 
   def test_every_boundary_and_loop
@@ -25,14 +25,14 @@ class TimelineTest < Minitest::Test
   def test_long_running_deterministic_loop
     [0, 1, 10, 52, 64, 105.9].each do |t|
       base = LobbyTimeline.at(t, LobbyConfig::SCENES, 2)
-      later = LobbyTimeline.at(t + 130 * 100_000, LobbyConfig::SCENES, 2)
+      later = LobbyTimeline.at(t + 117 * 100_000, LobbyConfig::SCENES, 2)
       assert_equal base[:index], later[:index]
       assert_in_delta base[:mix], later[:mix], 0.000001
     end
   end
 
   def test_every_frame_is_bounded
-    7801.times do |frame|
+    7021.times do |frame|
       state = LobbyTimeline.at(frame / 60.0, LobbyConfig::SCENES, 2)
       assert_operator state[:mix], :>=, 0
       assert_operator state[:mix], :<=, 1

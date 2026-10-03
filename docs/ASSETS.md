@@ -47,3 +47,5 @@ DragonRuby 7.21 Pro is an externally installed, licensed runtime and is not an a
 ## Native opening drawing
 
 `app/nanhu_strokes.rb` contains manually authored vector paths following the Nanhu photograph: waterfront, selected architectural roof contours, elevations and site planting. `app/nanhu_sketch.rb` adds restrained perspective-aligned pencil details and renders the paths as progressively extending native DragonRuby lines. There is no generated sketch bitmap, edge-filter image, or externally downloaded reference. The source photograph retains Tianhua’s reserved rights; the new Ruby rendering implementation is project code under the code license.
+
+The refined opening adds `app/nanhu_architecture_detail.rb` (selected visible roof and façade planes, parapets and courtyard detail) and `app/nanhu_curves.rb` (editable smooth waterfront, tree-crown and planted-bank controls). Their sampled paths remain native, distance-drawn geometry; no extra photographs, font downloads, image model output or runtime binary is introduced.

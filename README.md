@@ -25,25 +25,29 @@ The display opens fullscreen and hides the pointer. There are no on-screen butto
 
 - Layout uses a **1280 × 720 logical canvas**. DragonRuby HD mode and linear scaling are enabled in `metadata/game_metadata.txt` for 1080p and 4K displays; photographic source resolution still limits image detail.
 - Use a **16:9 TV/output mode** for edge-to-edge presentation. A 4:3 output preserves the composition with letterboxing rather than stretching it.
-- The loop is **130 seconds**: opening 34s; three hero projects at 14s each; collection 12s; three more heroes at 14s each. It repeats automatically.
+- The loop is **117 seconds**: opening 21s; three hero projects at 14s each; collection 12s; three more heroes at 14s each. It repeats automatically.
 - Smooth 2-second dissolves occur inside each scene's allotted duration, including the last-to-first transition. Gentle source-image pan/zoom fills each photo viewport without distorting the image.
 
 ## Opening choreography
 
-The 34-second opening begins on an entirely white canvas. The waterfront and architectural structure are drawn with real DragonRuby line primitives, followed by roof, façade and quiet landscape detail. Individual segments lengthen continuously; this is not a still sketch uncovered by a mask.
+The 21-second opening begins on an entirely white canvas. Meaningful architectural lines build rapidly, while photographic development is deliberately slower. Every contour is drawn with native DragonRuby line primitives, not a still sketch uncovered by a mask.
 
-- 0–1.6s: blank white sheet
-- 1.6–19s: staged architectural drawing; logo fades in from 5s, introduction from 9s
-- 19–20s: completed drawing holds
-- 20–27s: a slow photographic development; pencil contours recede naturally
-- 27–34s: finished photograph, caption and a subtle camera push; outgoing dissolve occupies the last 2s
+- 0–0.65s: blank white sheet
+- 0.65–8.5s: accelerated waterfront, roofs, eaves, façade bays, glazing, parapets and courtyard detail; introduction appears gently during the drawing
+- 8–18s: ten-second photographic development, with a subtle early tint while the last small details finish
+- 12–18.5s: the complete pencil drawing recedes gradually over the photograph
+- 18–21s: full photographic composition; outgoing dissolve remains in the last 2s
 
-The photograph and vector paths use the same source coordinate transform. The camera remains fixed through the entire drawing/photo overlap, avoiding a sliding or mismatched reveal. A dedicated 2× render target clips the drawing to the right panel and smooths native line rendering. The remaining seven scenes retain their original timing and design.
+Smooth, editable contour curves follow the waterfront and planted banks. Tree crowns use continuous curved outlines; straight building geometry stays straight. Roof seams, selected tile courses and glazing rhythms are architectural interpretations constrained to visible photographic planes, not claims of tracing each individual tile.
+
+The photograph and vector paths share the same source coordinate transform. The camera remains fixed until 18.5s, after all pencil has disappeared. A dedicated 2× render target clips and smooths native linework. Compiled segment geometry and the completed native drawing are cached during the long reveal to keep playback responsive. The remaining seven scenes retain their original timing and design.
 
 ## Editing
 
 - `app/config.rb`: six bilingual hero titles, local image paths, reference work URLs, scene order/durations, fullscreen flag and dissolve duration. URLs are provenance metadata, not runtime links or network requests.
 - `app/nanhu_strokes.rb`: hand-authored architectural contours in source-photo coordinates (1920 × 968, top-left origin). Edit meaningful roofs, eaves and façade paths here; no raster sketch is used.
+- `app/nanhu_architecture_detail.rb`: editable source-photo roof quadrilaterals, façade planes, parapets and architectural detail generators.
+- `app/nanhu_curves.rb`: smooth waterfront and planting control points, sampled into progressively drawn native lines.
 - `app/nanhu_sketch.rb`: distance-based stroke drawing, supersampled native line primitives, shared crop transform, and the drawing-to-photo choreography.
 - `app/timeline.rb`: pure-Ruby scene selection, wraparound and smooth dissolve calculation. Keep scene durations positive and the fade positive and no longer than the shortest scene.
 - `app/main.rb`: composition, palette, typography, welcome/service wording, three collection cards, crop handling and the optional QA capture hook. If replacing photos, maintain the expected dimensions or update the crop dimensions as well.
@@ -56,9 +60,11 @@ To rebuild after editing text: `python3 scripts/build_font.py` (requires fonttoo
 
 ## QA and collaboration
 
-Native QA completed a full unattended 130-second loop and clean restart on the cloud Linux desktop. All eight scenes, Chinese/English glyphs, longest title, photo crops, crossfades and wraparound were checked; no missing non-ASCII glyphs were found. The pure Ruby suite passed 10 tests / 34,596 assertions. Before deployment, still review scaling, color and overscan on the intended physical TV; that hardware was not available for this check.
+The first 21-second revision (741 paths) completed its 117-second unattended native loop on Linux, including eight opening-stage captures, with no missing assets or systematic sketch/photo misregistration. After adding rear-building detail (917 paths total) and precompiled native-line caching, the pure Ruby suite passed 12 tests / 44,660 assertions in that environment.
 
-For a development capture run, create `qa/enabled.txt` before launch. The current QA hook writes eight opening-stage screenshots, one screenshot per scene, and `qa/result.txt` after a full loop plus three seconds. This records scene capture count and a maximum wall-clock frame gap after warm-up, excluding the one-second windows following screenshot I/O; it is not a substitute for visual review or a frame-rate benchmark. Remove the marker and restart for normal operation. The `qa/` directory is ignored by Git.
+**Final native revalidation is pending.** The cloud workspace was replaced before the last native run, removing the local runtime and uncommitted work. This source revision was reconstructed from the recorded source edits and the verified remote base. The licensed DragonRuby runtime has not been restored or redistributed. The final 917-path/cached-render variant has not yet been visually validated end-to-end; do not treat the earlier 741-path run as final-render certification. Review on the intended TV is also still required for color, scaling, overscan and viewing-distance readability.
+
+For a development capture run, create `qa/enabled.txt` before launch. The current QA hook writes eight opening-stage screenshots, one screenshot per scene, and `qa/result.txt` after a full loop plus three seconds. This records scene capture count and a maximum and 95th-percentile wall-clock frame gaps after warm-up, excluding the one-second windows following screenshot I/O; it is not a substitute for visual review or a frame-rate benchmark. Remove the marker and restart for normal operation. The `qa/` directory is ignored by Git.
 
 Collaborate in Git using small topic branches and reviewable commits. Review code and source/license changes together; use the same separately licensed runtime version for reproducible native checks. Keep generated logs, QA captures, runtime binaries, credentials and local machine settings out of commits. The user-authorized repository is `https://github.com/thape-cn/web-on-tv`. Do not redistribute its media/runtime beyond the applicable permissions. The MIT code license does not make the photographs and Tianhua branding freely redistributable.
 
