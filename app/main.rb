@@ -20,6 +20,7 @@ class TianhuaLobby
       @last_frame = @started_at
       @last_capture = -10.0
       @max_frame_gap = 0.0
+      @frame_gaps = []
       @ready = true
     end
     seconds = [Time.now.to_f - @started_at, 0.0].max
@@ -37,10 +38,15 @@ class TianhuaLobby
       # Keep the optional QA hook safe when code is hot-reloaded mid-loop.
       @last_capture ||= -10.0
       now = Time.now.to_f
-      @max_frame_gap = [@max_frame_gap, now - @last_frame].max if seconds > 3 && seconds - @last_capture > 1.0
+      if seconds > 3 && seconds - @last_capture > 1.0
+        gap = now - @last_frame
+        @max_frame_gap = [@max_frame_gap, gap].max
+        @frame_gaps ||= []
+        @frame_gaps << gap unless @qa_complete
+      end
       @last_frame = now
       if timeline[:index] == 0
-        [0.5, 4.0, 8.0, 14.0, 19.0, 23.5, 27.5, 31.0].each do |stage|
+        [0.3, 2.5, 5.0, 8.0, 10.0, 13.0, 16.0, 18.5].each do |stage|
           key = "opening-#{stage}"
           if timeline[:elapsed] >= stage && !@captured[key]
             @captured[key] = true
@@ -56,7 +62,8 @@ class TianhuaLobby
         args.outputs.screenshots << { x: 0, y: 0, w: 1280, h: 720, path: "qa/scene-#{key}.png" }
       end
       if seconds > LobbyTimeline.duration(LobbyConfig::SCENES) + 3 && !@qa_complete
-        args.gtk.write_file('qa/result.txt', "Full loop complete. Captured #{@captured.keys.count { |key| key.is_a?(Integer) }} scenes and opening stages. Max frame gap after warm-up, excluding capture I/O: #{@max_frame_gap.round(4)} seconds.\n")
+        p95 = @frame_gaps.sort[(@frame_gaps.length * 0.95).floor] || 0.0
+        args.gtk.write_file('qa/result.txt', "Full loop complete. Captured #{@captured.keys.count { |key| key.is_a?(Integer) }} scenes and opening stages. Max frame gap after warm-up, excluding capture I/O: #{@max_frame_gap.round(4)} seconds. P95 frame gap: #{p95.round(4)} seconds.\n")
         @qa_complete = true
       end
     end
@@ -104,14 +111,14 @@ class TianhuaLobby
 
   def welcome(args, out, progress)
     time = progress * LobbyConfig::SCENES[0][:duration]
-    # A real blank sheet at t=0; the photo is absent for the first 20 seconds.
+    # A real blank sheet at t=0; the photo is absent for the first 8 seconds.
     solid(out, 0, 0, 1280, 720, WHITE)
     sketch = NanhuSketch.render(args, time)
     out.primitives << { x: 476, y: 0, w: 804, h: 720, path: sketch }.sprite!
-    brand = (255 * NanhuSketch.ramp(time, 5.0, 8.0)).round
-    introduction = (255 * NanhuSketch.ramp(time, 9.0, 12.5)).round
-    detail = (255 * NanhuSketch.ramp(time, 13.0, 16.0)).round
-    caption = (255 * NanhuSketch.ramp(time, 27.0, 29.0)).round
+    brand = (255 * NanhuSketch.ramp(time, 1.2, 3.0)).round
+    introduction = (255 * NanhuSketch.ramp(time, 3.0, 5.0)).round
+    detail = (255 * NanhuSketch.ramp(time, 5.0, 7.0)).round
+    caption = (255 * NanhuSketch.ramp(time, 17.5, 19.0)).round
     logo(out, 64, 612, 310, false, brand)
     solid(out, 64, 545, 42, 2, INK, introduction)
     label(out, '欢迎来到天华', 60, 375, 48, INK, introduction)

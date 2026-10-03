@@ -14,7 +14,7 @@ module LobbyConfig
     { title: '苏州高新区文体中心', english: 'SND CULTURAL & SPORTS CENTRE', image: 'assets/photos/hero-06.jpg', url: 'https://www.thape.com/works/39' }
   ]
   SCENES = [
-    { kind: :welcome, duration: 34.0 },
+    { kind: :welcome, duration: 21.0 },
     { kind: :hero, project: 0, duration: 14.0 },
     { kind: :hero, project: 1, duration: 14.0 },
     { kind: :hero, project: 2, duration: 14.0 },
