@@ -53,6 +53,7 @@ class TianhuaLobby
   end
 
   def label(out, text, x, y, size, color = WHITE, alpha = 255)
+    # Calibrated visual size for Noto CJK in HD render targets, verified natively.
     out.primitives << { x: x, y: y, text: text, size_px: (size * 1.45).round,
       font: LobbyConfig::FONT, r: color[0], g: color[1], b: color[2], a: alpha, anchor_y: 0 }.label!
   end
