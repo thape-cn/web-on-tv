@@ -1,0 +1,10 @@
+devtitle=Tianhua
+gameid=tianhua-lobby-display
+gametitle=TIANHUA Reception Display
+version=1.0
+orientation=landscape
+aspect_mode=0
+aspect_size=720
+scale_quality=1
+hd=true
+ignore_directories=docs,test,scripts,qa,.git
