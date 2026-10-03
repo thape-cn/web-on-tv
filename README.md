@@ -10,6 +10,13 @@ Use a separately installed, licensed DragonRuby runtime. Tested with DragonRuby 
 DRAGONRUBY_HOME=/path/to/licensed/dragonruby ./scripts/run.sh
 ```
 
+Or start from the licensed runtime directory after cloning this repository:
+
+- macOS / Linux: `./dragonruby /absolute/path/to/web-on-tv`
+- Windows PowerShell: `.\dragonruby.exe "C:\path\to\web-on-tv"`
+
+Use the **7.21 Pro** download for the target OS. Only Linux was tested here; macOS and Windows commands are the equivalent runtime launch forms, not claims of platform QA.
+
 Without `DRAGONRUBY_HOME`, the launcher uses `/workspace/shared/dragonruby/current`. It checks for an executable `dragonruby`, changes into the runtime directory and launches this project by absolute path. The runtime is external and is not redistributed with this repository. Do not commit a runtime, license files or credentials.
 
 The display opens fullscreen and hides the pointer. There are no on-screen buttons, links or visitor controls, and no audio. Operators exit with the OS window-close action or **Alt+F4**. Use the OS display settings to select the TV and its native resolution before starting.
